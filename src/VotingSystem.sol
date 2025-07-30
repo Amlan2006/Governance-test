@@ -6,7 +6,11 @@ contract VotingSystem is ERC20{
     mapping(address voters => uint256 tokenCount) public votersToTokenCount;
     uint256 public voterCount = 1;
     uint256 INITIAL_SUPPLY = 1000e18;
-    // Add mapping of option and address to votes
+    string[] public options;
+    mapping(address voter => mapping(uint256 votes => string optionName)) public voterVotes;
+    mapping(string optionName => uint256 duration) public votingOptions;
+    mapping(string optionName => uint256 votes) public optionVotes;
+
 
     constructor() ERC20("VotingToken", "VT") { 
         msg.sender == owner;
@@ -22,18 +26,49 @@ contract VotingSystem is ERC20{
         voterCount++;
         return votersToTokenCount[voter];
     }
-    function hostVoting(uint256 optionNumber, uint256 durationInDays) public onlyOwner{
-
+function hostVoting(string memory option, uint256 durationInDays) public onlyOwner{
+    votingOptions[option] = durationInDays * 1 days;
+    options.push(option);
+}
+    function getVotingOptions() public view returns (string[] memory) {
+        string[] memory opts = new string[](options.length);
+        for (uint256 i = 0; i < options.length; i++) {
+            opts[i] = options[i];
+        }
+        return opts;
     }
-    function giveVotes(address voter, uint256 amount) public{
+    
+
+    function giveVotes(address voter, uint256 amount,string memory option) public{
         if(votersToTokenCount[voter] == 0){
             revert("Voter not registered");
         }
+        require(amount <= votersToTokenCount[voter], "Insufficient tokens");
+        require(amount > 0, "Amount must be greater than zero");
+        require(block.timestamp < votingOptions[voterVotes[voter][amount]], "Voting period has ended");
+        _transfer(voter,address(this), amount);
+        voterVotes[voter][amount] = option;
+        optionVotes[option] += amount;
+    }
+    function checkWinner(string[] memory options) public view returns (string memory winner, uint256 winningVotes) {
+        require(options.length > 0, "Option does not exist");
 
+        uint256 maxVotes = 0;
+        string memory winningOption = "";
+
+        for (uint256 i = 0; i < options.length; i++) {
+            uint256 votes = optionVotes[options[i]];
+            if (votes > maxVotes) {
+                maxVotes = votes;
+                winningOption = options[i];
+            }
+        }
+
+        return (winningOption, maxVotes);
     }
 
-
-
-
-    
 }
+
+
+
+
