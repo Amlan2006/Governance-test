@@ -21,10 +21,18 @@ contract VotingSystem is ERC20{
     }
     // Register a voter and assign them tokens
     function registerVoter(address voter) public returns(uint256){
-        votersToTokenCount[voter] = INITIAL_SUPPLY/voterCount;
+        // voter need to get INITIAL_SUPPLY/voterCount tokens
+        // transfer tokens from previous voter to new voter whose sum will be equal to INITIAL_SUPPLY/voterCount
+        // the amount each of the previous owners has to pay to new voter will be equal to INITIAL_SUPPLY/voterCount-1
+        if(votersToTokenCount[voter] > 0){
+        require(voter != address(0), "Invalid voter address");
+        votersToTokenCount[voter] = INITIAL_SUPPLY/voterCount;//This has to change
         _mint(voter,votersToTokenCount[voter]);
         voterCount++;
+
         return votersToTokenCount[voter];
+    }
+        revert("Voter already registered");
     }
 function hostVoting(string memory option, uint256 durationInDays) public onlyOwner{
     votingOptions[option] = durationInDays * 1 days;
