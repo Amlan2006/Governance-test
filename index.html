@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voting DApp</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <title>Voting System - Web3 DApp</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,11 +13,11 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            position: relative;
             overflow-x: hidden;
+            position: relative;
         }
 
         body::before {
@@ -28,9 +28,9 @@
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
             pointer-events: none;
             z-index: -1;
         }
@@ -38,7 +38,7 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 20px;
             position: relative;
             z-index: 1;
         }
@@ -49,25 +49,19 @@
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .glass:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 30px;
+            padding: 30px;
         }
 
         .header h1 {
             color: white;
             font-size: 3rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 10px;
             text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
@@ -76,135 +70,44 @@
             font-size: 1.2rem;
         }
 
-        .status-bar {
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
+        .wallet-section {
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
         }
 
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .wallet-info {
             color: white;
-            font-weight: 500;
+            margin-bottom: 20px;
         }
 
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #ef4444;
-            transition: background-color 0.3s ease;
-        }
-
-        .status-dot.connected {
-            background: #4ade80;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        @media (max-width: 768px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            padding: 2rem;
-        }
-
-        .card h2 {
-            color: white;
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.875rem 1rem;
+        .wallet-address {
+            font-family: 'Courier New', monospace;
             background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: white;
-            font-size: 1rem;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-        }
-
-        .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 0.9rem;
         }
 
         .btn {
-            padding: 0.875rem 1.75rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1rem;
+            padding: 12px 30px;
+            border-radius: 15px;
             cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn:hover::before {
-            left: 100%;
+            backdrop-filter: blur(10px);
+            margin: 5px;
         }
 
         .btn:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
         }
 
         .btn:active {
@@ -212,150 +115,233 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+            background: linear-gradient(135deg, #11998e, #38ef7d);
         }
 
-        .btn-warning {
-            background: linear-gradient(135deg, #d97706 0%, #ea580c 100%);
+        .btn-success:hover {
+            background: linear-gradient(135deg, #0e8474, #32d96a);
         }
 
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
         }
 
-        .status-item {
-            position: relative;
+        .section {
+            padding: 30px;
+            margin-bottom: 20px;
         }
 
-        .status-item:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
+        .section h2 {
             color: white;
-            padding: 0.5rem;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            z-index: 1000;
-            pointer-events: none;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            font-weight: 600;
         }
 
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
+        .form-group {
+            margin-bottom: 20px;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .form-group label {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+            font-weight: 500;
         }
 
-        .voting-options {
-            margin-top: 1.5rem;
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .options-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
         }
 
         .option-item {
-            padding: 1rem;
-            margin-bottom: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 8px;
+            color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s ease;
         }
 
-        .option-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
+        .vote-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
         }
 
-        .option-name {
-            color: white;
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
             font-weight: 500;
         }
 
-        .option-votes {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
+        .status-success {
+            background: rgba(56, 239, 125, 0.2);
+            border: 1px solid rgba(56, 239, 125, 0.3);
+            color: #38ef7d;
         }
 
-        .results-section {
-            grid-column: 1 / -1;
-            padding: 2rem;
+        .status-error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
+
+        .status-info {
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            color: #667eea;
+        }
+
+        .winner-section {
+            text-align: center;
+            padding: 25px;
+        }
+
+        .winner-display {
+            background: linear-gradient(135deg, rgba(56, 239, 125, 0.2), rgba(17, 153, 142, 0.2));
+            border: 2px solid rgba(56, 239, 125, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .winner-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #38ef7d;
+            margin-bottom: 10px;
+        }
+
+        .winner-votes {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .token-display {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .token-balance {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .token-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .token-amount {
+            color: #38ef7d;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(56, 239, 125, 0.3);
+        }
+
+        .voter-status {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 12px;
+            margin: 10px 0;
             text-align: center;
         }
 
-        .winner-announcement {
-            padding: 2rem;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
-            border-radius: 16px;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            margin-top: 1.5rem;
+        .status-registered {
+            border: 1px solid rgba(56, 239, 125, 0.3);
+            color: #38ef7d;
         }
 
-        .winner-announcement h3 {
-            color: #10b981;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .winner-announcement p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.1rem;
-        }
-
-        .loading {
+        .status-not-registered {
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            color: white;
-            font-weight: 500;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-            z-index: 1000;
+        .hidden {
+            display: none;
         }
 
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
-        }
-
-        .notification.error {
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .section {
+                padding: 20px;
+            }
         }
 
         .floating-elements {
@@ -368,1262 +354,768 @@
             z-index: -1;
         }
 
-        .floating-element {
+        .floating-circle {
             position: absolute;
-            background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
             animation: float 6s ease-in-out infinite;
         }
 
-        .floating-element:nth-child(1) {
-            width: 80px;
-            height: 80px;
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .floating-element:nth-child(2) {
+        .floating-circle:nth-child(1) {
             width: 60px;
             height: 60px;
-            top: 60%;
-            right: 10%;
+            top: 10%;
+            left: 10%;
+            animation-duration: 8s;
+        }
+
+        .floating-circle:nth-child(2) {
+            width: 100px;
+            height: 100px;
+            top: 70%;
+            right: 15%;
+            animation-duration: 10s;
             animation-delay: 2s;
         }
 
-        .floating-element:nth-child(3) {
-            width: 100px;
-            height: 100px;
-            bottom: 20%;
-            left: 20%;
+        .floating-circle:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            top: 30%;
+            right: 30%;
+            animation-duration: 12s;
             animation-delay: 4s;
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
         }
     </style>
 </head>
 <body>
     <div class="floating-elements">
-        <div class="floating-element"></div>
-        <div class="floating-element"></div>
-        <div class="floating-element"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
     </div>
 
     <div class="container">
-        <div class="header">
-            <h1>🗳️ Voting DApp</h1>
-            <p>Decentralized Token-Based Voting System</p>
+        <div class="glass header">
+            <h1>🗳️ Voting System</h1>
+            <p>Decentralized Token-Based Voting Platform</p>
         </div>
 
-        <div class="glass status-bar">
-            <div class="status-item">
-                <div class="status-dot" id="status-dot"></div>
-                <span id="connection-status">Not Connected</span>
+        <div class="glass wallet-section">
+            <div id="walletInfo" class="wallet-info">
+                <p>Connect your wallet to start voting</p>
             </div>
-            <div class="status-item">
-                <span>Account: </span>
-                <span id="user-account">Not Connected</span>
+            <div id="tokenInfo" class="wallet-info hidden">
+                <div class="token-display">
+                    <div class="token-balance">
+                        <span class="token-label">Your Voting Tokens:</span>
+                        <span id="tokenBalance" class="token-amount">0 VT</span>
+                    </div>
+                    <button id="refreshTokens" class="btn" style="font-size: 0.9rem; padding: 8px 16px;">Refresh Balance</button>
+                </div>
             </div>
-            <div class="status-item">
-                <span>Tokens: </span>
-                <span id="user-tokens">0 VT</span>
-            </div>
-            <button class="btn btn-primary" id="connect-btn" onclick="connectWallet()">
-                <span id="connect-btn-text">🔗 Connect Wallet</span>
-            </button>
+            <button id="connectWallet" class="btn btn-primary">Connect Wallet</button>
+            <button id="disconnectWallet" class="btn hidden">Disconnect</button>
         </div>
 
-        <div class="main-grid">
-            <div class="glass card">
-                <h2>👤 Voter Registration</h2>
+        <div id="mainContent" class="main-content hidden">
+            <div class="glass section">
+                <h2>📝 Register Voter</h2>
                 <div class="form-group">
-                    <label for="voter-address">Voter Address</label>
-                    <input type="text" id="voter-address" class="form-input" placeholder="0x...">
+                    <label for="voterAddress">Voter Address</label>
+                    <input type="text" id="voterAddress" class="form-control" placeholder="0x...">
                 </div>
-                <button class="btn btn-primary" onclick="registerVoter()">
-                    <span id="register-btn-text">Register Voter</span>
-                </button>
+                <button id="registerVoterBtn" class="btn btn-success">Register Voter</button>
+                <div id="registerStatus" class="status-message hidden"></div>
             </div>
 
-            <div class="glass card">
-                <h2>🚀 Create Voting Option</h2>
+            <div class="glass section">
+                <h2>🏛️ Create Voting Option</h2>
                 <div class="form-group">
-                    <label for="option-name">Option Name</label>
-                    <input type="text" id="option-name" class="form-input" placeholder="Enter voting option">
+                    <label for="optionName">Option Name</label>
+                    <input type="text" id="optionName" class="form-control" placeholder="Enter voting option">
                 </div>
                 <div class="form-group">
-                    <label for="voting-duration">Duration (Days)</label>
-                    <input type="number" id="voting-duration" class="form-input" placeholder="7" min="1">
+                    <label for="votingDuration">Duration (Days)</label>
+                    <input type="number" id="votingDuration" class="form-control" placeholder="30" min="1">
                 </div>
-                <button class="btn btn-success" onclick="createVotingOption()">
-                    <span id="create-btn-text">Create Option</span>
-                </button>
+                <button id="createOptionBtn" class="btn btn-success">Create Option</button>
+                <div id="createStatus" class="status-message hidden"></div>
             </div>
 
-            <div class="glass card">
-                <h2>🗳️ Cast Your Vote</h2>
+            <div class="glass section">
+                <h2>🗳️ Cast Vote</h2>
                 <div class="form-group">
-                    <label for="vote-option">Select Option</label>
-                    <select id="vote-option" class="form-input">
-                        <option value="">Select an option...</option>
-                    </select>
+                    <label for="voteVoterAddress">Voter Address</label>
+                    <input type="text" id="voteVoterAddress" class="form-control" placeholder="0x...">
                 </div>
                 <div class="form-group">
-                    <label for="vote-amount">Token Amount</label>
-                    <input type="number" id="vote-amount" class="form-input" placeholder="100" min="1">
+                    <label for="voteAmount">Token Amount</label>
+                    <input type="number" id="voteAmount" class="form-control" placeholder="100" min="1">
                 </div>
-                <button class="btn btn-warning" onclick="castVote()">
-                    <span id="vote-btn-text">Cast Vote</span>
-                </button>
+                <div class="form-group">
+                    <label for="voteOption">Option</label>
+                    <input type="text" id="voteOption" class="form-control" placeholder="Option name">
+                </div>
+                <button id="castVoteBtn" class="btn btn-success">Cast Vote</button>
+                <div id="voteStatus" class="status-message hidden"></div>
             </div>
 
-            <div class="glass card">
+            <div class="glass section">
                 <h2>📊 Voting Options</h2>
-                <button class="btn" onclick="loadVotingOptions()">Refresh Options</button>
-                <div id="voting-options" class="voting-options">
-                    <p style="color: rgba(255, 255, 255, 0.7); text-align: center; margin-top: 1rem;">
-                        Click "Refresh Options" to load available votes
-                    </p>
+                <button id="refreshOptionsBtn" class="btn">Refresh Options</button>
+                <div id="optionsList" class="options-list">
+                    <p style="color: rgba(255, 255, 255, 0.7);">Click refresh to load options</p>
                 </div>
             </div>
 
-            <div class="glass results-section">
-                <h2>🏆 Results</h2>
-                <button class="btn btn-primary" onclick="checkResults()">Check Winner</button>
-                <div id="results-display"></div>
+            <div class="glass section winner-section">
+                <h2>🏆 Check Winner</h2>
+                <button id="checkWinnerBtn" class="btn btn-primary">Check Winner</button>
+                <div id="winnerDisplay" class="winner-display hidden">
+                    <div class="winner-name" id="winnerName"></div>
+                    <div class="winner-votes" id="winnerVotes"></div>
+                </div>
+                <div id="winnerStatus" class="status-message hidden"></div>
             </div>
         </div>
     </div>
 
-    <div id="notification" class="notification"></div>
-
     <script>
-        // Mock contract interface - replace with actual Web3 integration
-        let web3;
-        let contract;
-        let userAccount;
-        let contractAddress = "0x95bD8D42f30351685e96C62EDdc0d0613bf9a87A";
-        let contractABI = [
-            
-                {
-                    "inputs": [],
-                    "stateMutability": "nonpayable",
-                    "type": "constructor"
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "spender",
-                            "type": "address"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "allowance",
-                            "type": "uint256"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "needed",
-                            "type": "uint256"
-                        }
-                    ],
-                    "type": "error",
-                    "name": "ERC20InsufficientAllowance"
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "sender",
-                            "type": "address"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "balance",
-                            "type": "uint256"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "needed",
-                            "type": "uint256"
-                        }
-                    ],
-                    "type": "error",
-                    "name": "ERC20InsufficientBalance"
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "approver",
-                            "type": "address"
-                        }
-                    ],
-                    "type": "error",
-                    "name": "ERC20InvalidApprover"
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "receiver",
-                            "type": "address"
-                        }
-                    ],
-                    "type": "error",
-                    "name": "ERC20InvalidReceiver"
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "sender",
-                            "type": "address"
-                        }
-                    ],
-                    "type": "error",
-                    "name": "ERC20InvalidSender"
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "spender",
-                            "type": "address"
-                        }
-                    ],
-                    "type": "error",
-                    "name": "ERC20InvalidSpender"
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "owner",
-                            "type": "address",
-                            "indexed": true
-                        },
-                        {
-                            "internalType": "address",
-                            "name": "spender",
-                            "type": "address",
-                            "indexed": true
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "value",
-                            "type": "uint256",
-                            "indexed": false
-                        }
-                    ],
-                    "type": "event",
-                    "name": "Approval",
-                    "anonymous": false
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "from",
-                            "type": "address",
-                            "indexed": true
-                        },
-                        {
-                            "internalType": "address",
-                            "name": "to",
-                            "type": "address",
-                            "indexed": true
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "value",
-                            "type": "uint256",
-                            "indexed": false
-                        }
-                    ],
-                    "type": "event",
-                    "name": "Transfer",
-                    "anonymous": false
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "owner",
-                            "type": "address"
-                        },
-                        {
-                            "internalType": "address",
-                            "name": "spender",
-                            "type": "address"
-                        }
-                    ],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "allowance",
-                    "outputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "",
-                            "type": "uint256"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "spender",
-                            "type": "address"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "value",
-                            "type": "uint256"
-                        }
-                    ],
-                    "stateMutability": "nonpayable",
-                    "type": "function",
-                    "name": "approve",
-                    "outputs": [
-                        {
-                            "internalType": "bool",
-                            "name": "",
-                            "type": "bool"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "account",
-                            "type": "address"
-                        }
-                    ],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "balanceOf",
-                    "outputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "",
-                            "type": "uint256"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "string[]",
-                            "name": "options",
-                            "type": "string[]"
-                        }
-                    ],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "checkWinner",
-                    "outputs": [
-                        {
-                            "internalType": "string",
-                            "name": "winner",
-                            "type": "string"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "winningVotes",
-                            "type": "uint256"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "decimals",
-                    "outputs": [
-                        {
-                            "internalType": "uint8",
-                            "name": "",
-                            "type": "uint8"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "getVotingOptions",
-                    "outputs": [
-                        {
-                            "internalType": "string[]",
-                            "name": "",
-                            "type": "string[]"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "voter",
-                            "type": "address"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "amount",
-                            "type": "uint256"
-                        },
-                        {
-                            "internalType": "string",
-                            "name": "option",
-                            "type": "string"
-                        }
-                    ],
-                    "stateMutability": "nonpayable",
-                    "type": "function",
-                    "name": "giveVotes"
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "string",
-                            "name": "option",
-                            "type": "string"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "durationInDays",
-                            "type": "uint256"
-                        }
-                    ],
-                    "stateMutability": "nonpayable",
-                    "type": "function",
-                    "name": "hostVoting"
-                },
-                {
-                    "inputs": [],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "name",
-                    "outputs": [
-                        {
-                            "internalType": "string",
-                            "name": "",
-                            "type": "string"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "string",
-                            "name": "optionName",
-                            "type": "string"
-                        }
-                    ],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "optionVotes",
-                    "outputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "votes",
-                            "type": "uint256"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "",
-                            "type": "uint256"
-                        }
-                    ],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "options",
-                    "outputs": [
-                        {
-                            "internalType": "string",
-                            "name": "",
-                            "type": "string"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "owner",
-                    "outputs": [
-                        {
-                            "internalType": "address",
-                            "name": "",
-                            "type": "address"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "voter",
-                            "type": "address"
-                        }
-                    ],
-                    "stateMutability": "nonpayable",
-                    "type": "function",
-                    "name": "registerVoter",
-                    "outputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "",
-                            "type": "uint256"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "symbol",
-                    "outputs": [
-                        {
-                            "internalType": "string",
-                            "name": "",
-                            "type": "string"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "totalSupply",
-                    "outputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "",
-                            "type": "uint256"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "to",
-                            "type": "address"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "value",
-                            "type": "uint256"
-                        }
-                    ],
-                    "stateMutability": "nonpayable",
-                    "type": "function",
-                    "name": "transfer",
-                    "outputs": [
-                        {
-                            "internalType": "bool",
-                            "name": "",
-                            "type": "bool"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "from",
-                            "type": "address"
-                        },
-                        {
-                            "internalType": "address",
-                            "name": "to",
-                            "type": "address"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "value",
-                            "type": "uint256"
-                        }
-                    ],
-                    "stateMutability": "nonpayable",
-                    "type": "function",
-                    "name": "transferFrom",
-                    "outputs": [
-                        {
-                            "internalType": "bool",
-                            "name": "",
-                            "type": "bool"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "voterCount",
-                    "outputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "",
-                            "type": "uint256"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "voter",
-                            "type": "address"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "votes",
-                            "type": "uint256"
-                        }
-                    ],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "voterVotes",
-                    "outputs": [
-                        {
-                            "internalType": "string",
-                            "name": "optionName",
-                            "type": "string"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "address",
-                            "name": "voters",
-                            "type": "address"
-                        }
-                    ],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "votersToTokenCount",
-                    "outputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "tokenCount",
-                            "type": "uint256"
-                        }
-                    ]
-                },
-                {
-                    "inputs": [
-                        {
-                            "internalType": "string",
-                            "name": "optionName",
-                            "type": "string"
-                        }
-                    ],
-                    "stateMutability": "view",
-                    "type": "function",
-                    "name": "votingOptions",
-                    "outputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "duration",
-                            "type": "uint256"
-                        }
-                    ]
-                }
-            
-        ]; // Add your contract ABI here
-
-        // Mock data for demonstration
-        let mockOptions = [];
-        let mockVotes = {};
-        let userTokens = 1000;
-        let isConnected = false;
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-            setTimeout(() => {
-                notification.className = `notification ${type}`;
-            }, 3000);
-        }
-
-        function setButtonLoading(spanId, loading) {
-            const span = document.getElementById(spanId);
-            const button = span.closest('button');
-            if (loading) {
-                span.innerHTML = '<div class="loading"></div>';
-                button.disabled = true;
-            } else {
-                button.disabled = false;
+        // Contract configuration
+        const CONTRACT_ADDRESS = "0x057ef64E23666F000b34aE31332854aCBd1c8544";
+        const CONTRACT_ABI = [
+            {
+                "type": "constructor",
+                "inputs": [],
+                "stateMutability": "nonpayable"
+            },
+            {
+                "type": "function",
+                "name": "allowance",
+                "inputs": [
+                    { "name": "owner", "type": "address", "internalType": "address" },
+                    { "name": "spender", "type": "address", "internalType": "address" }
+                ],
+                "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "approve",
+                "inputs": [
+                    { "name": "spender", "type": "address", "internalType": "address" },
+                    { "name": "value", "type": "uint256", "internalType": "uint256" }
+                ],
+                "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+                "stateMutability": "nonpayable"
+            },
+            {
+                "type": "function",
+                "name": "balanceOf",
+                "inputs": [{ "name": "account", "type": "address", "internalType": "address" }],
+                "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "checkWinner",
+                "inputs": [{ "name": "options", "type": "string[]", "internalType": "string[]" }],
+                "outputs": [
+                    { "name": "winner", "type": "string", "internalType": "string" },
+                    { "name": "winningVotes", "type": "uint256", "internalType": "uint256" }
+                ],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "decimals",
+                "inputs": [],
+                "outputs": [{ "name": "", "type": "uint8", "internalType": "uint8" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "getVotingOptions",
+                "inputs": [],
+                "outputs": [{ "name": "", "type": "string[]", "internalType": "string[]" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "giveVotes",
+                "inputs": [
+                    { "name": "voter", "type": "address", "internalType": "address" },
+                    { "name": "amount", "type": "uint256", "internalType": "uint256" },
+                    { "name": "option", "type": "string", "internalType": "string" }
+                ],
+                "outputs": [],
+                "stateMutability": "nonpayable"
+            },
+            {
+                "type": "function",
+                "name": "hasTransfered",
+                "inputs": [],
+                "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "hostVoting",
+                "inputs": [
+                    { "name": "option", "type": "string", "internalType": "string" },
+                    { "name": "durationInDays", "type": "uint256", "internalType": "uint256" }
+                ],
+                "outputs": [],
+                "stateMutability": "nonpayable"
+            },
+            {
+                "type": "function",
+                "name": "name",
+                "inputs": [],
+                "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "optionVotes",
+                "inputs": [{ "name": "optionName", "type": "string", "internalType": "string" }],
+                "outputs": [{ "name": "votes", "type": "uint256", "internalType": "uint256" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "options",
+                "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+                "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "owner",
+                "inputs": [],
+                "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "registerVoter",
+                "inputs": [{ "name": "voter", "type": "address", "internalType": "address" }],
+                "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+                "stateMutability": "nonpayable"
+            },
+            {
+                "type": "function",
+                "name": "symbol",
+                "inputs": [],
+                "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "totalSupply",
+                "inputs": [],
+                "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "transfer",
+                "inputs": [
+                    { "name": "to", "type": "address", "internalType": "address" },
+                    { "name": "value", "type": "uint256", "internalType": "uint256" }
+                ],
+                "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+                "stateMutability": "nonpayable"
+            },
+            {
+                "type": "function",
+                "name": "transferFrom",
+                "inputs": [
+                    { "name": "from", "type": "address", "internalType": "address" },
+                    { "name": "to", "type": "address", "internalType": "address" },
+                    { "name": "value", "type": "uint256", "internalType": "uint256" }
+                ],
+                "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+                "stateMutability": "nonpayable"
+            },
+            {
+                "type": "function",
+                "name": "voterCount",
+                "inputs": [],
+                "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "voterVotes",
+                "inputs": [
+                    { "name": "voter", "type": "address", "internalType": "address" },
+                    { "name": "votes", "type": "uint256", "internalType": "uint256" }
+                ],
+                "outputs": [{ "name": "optionName", "type": "string", "internalType": "string" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "voters",
+                "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+                "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "votersToTokenCount",
+                "inputs": [{ "name": "voters", "type": "address", "internalType": "address" }],
+                "outputs": [{ "name": "tokenCount", "type": "uint256", "internalType": "uint256" }],
+                "stateMutability": "view"
+            },
+            {
+                "type": "function",
+                "name": "votingOptions",
+                "inputs": [{ "name": "optionName", "type": "string", "internalType": "string" }],
+                "outputs": [{ "name": "duration", "type": "uint256", "internalType": "uint256" }],
+                "stateMutability": "view"
             }
-        }
+        ];
 
+        // Global variables
+        let provider = null;
+        let signer = null;
+        let contract = null;
+        let currentAccount = null;
+
+        // DOM elements
+        const connectWalletBtn = document.getElementById('connectWallet');
+        const disconnectWalletBtn = document.getElementById('disconnectWallet');
+        const walletInfo = document.getElementById('walletInfo');
+        const tokenInfo = document.getElementById('tokenInfo');
+        const tokenBalance = document.getElementById('tokenBalance');
+        const refreshTokensBtn = document.getElementById('refreshTokens');
+        const mainContent = document.getElementById('mainContent');
+
+        // Initialize
+        window.addEventListener('load', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                console.log('MetaMask is installed!');
+                await checkConnection();
+            } else {
+                showStatus('walletInfo', 'Please install MetaMask to use this DApp', 'error');
+            }
+        });
+
+        // Wallet connection functions
         async function connectWallet() {
-            const connectBtn = document.getElementById('connect-btn-text');
-            
-            if (isConnected) {
-                // Disconnect wallet
-                isConnected = false;
-                userAccount = null;
-                userTokens = 0;
-                contract = null;
-                connectBtn.textContent = '🔗 Connect Wallet';
-                updateConnectionStatus();
-                
-                // Clear voting options and form fields
-                mockOptions = [];
-                mockVotes = {};
-                updateVoteOptions();
-                document.getElementById('voting-options').innerHTML = '<p style="color: rgba(255, 255, 255, 0.7); text-align: center; margin-top: 1rem;">Click "Refresh Options" to load available votes</p>';
-                document.getElementById('results-display').innerHTML = '';
-                
-                showNotification('Wallet disconnected', 'success');
-                return;
-            }
-
-            setButtonLoading('connect-btn-text', true);
-            
-            if (typeof window.ethereum !== 'undefined') {
-                try {
-                    web3 = new Web3(window.ethereum);
-                    await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    const accounts = await web3.eth.getAccounts();
-                    userAccount = accounts[0];
-                    userTokens = 1000; // Mock token balance
-                    
-                    // Initialize contract
-                    contract = new web3.eth.Contract(contractABI, contractAddress);
-                    
-                    isConnected = true;
-                    connectBtn.textContent = '🔌 Disconnect';
-                    updateConnectionStatus();
-                    
-                    // Load user tokens from contract
-                    await updateUserTokens();
-                    
-                    // Check if user is registered, if not, register them automatically
-                    const voterTokens = await contract.methods.votersToTokenCount(userAccount).call();
-                    if (parseInt(voterTokens) === 0) {
-                        try {
-                            await contract.methods.registerVoter(userAccount).send({
-                                from: userAccount,
-                                gas: 200000
-                            });
-                            await updateUserTokens();
-                            showNotification('Wallet connected and registered as voter!', 'success');
-                        } catch (error) {
-                            console.error('Auto-registration failed:', error);
-                            showNotification('Wallet connected successfully!', 'success');
-                        }
-                    } else {
-                        showNotification('Wallet connected successfully!', 'success');
-                    }
-                } catch (error) {
-                    console.error('Web3 connection failed:', error);
-                    showNotification('Failed to connect wallet', 'error');
-                    connectBtn.textContent = '🔗 Connect Wallet';
-                    setButtonLoading('connect-btn-text', false);
-                }
-            } else {
-                // Mock connection for demo
-                setTimeout(async () => {
-                    isConnected = true;
-                    userAccount = '0x742d35Cc6635C0532925a3b8D31Cc1a80429d';
-                    userTokens = 1000;
-                    connectBtn.textContent = '🔌 Disconnect';
-                    updateConnectionStatus();
-                    
-                    // Initialize contract for demo mode
-                    if (typeof window.ethereum === 'undefined') {
-                        // Create a mock contract for demo mode
-                        contract = {
-                            methods: {
-                                registerVoter: (address) => ({
-                                    send: async (params) => {
-                                        await new Promise(resolve => setTimeout(resolve, 1000));
-                                        return { transactionHash: '0x' + Math.random().toString(16).substr(2, 64) };
-                                    }
-                                }),
-                                hostVoting: (option, duration) => ({
-                                    send: async (params) => {
-                                        await new Promise(resolve => setTimeout(resolve, 1000));
-                                        mockOptions.push(option);
-                                        mockVotes[option] = 0;
-                                        return { transactionHash: '0x' + Math.random().toString(16).substr(2, 64) };
-                                    }
-                                }),
-                                giveVotes: (voter, amount, option) => ({
-                                    send: async (params) => {
-                                        await new Promise(resolve => setTimeout(resolve, 1000));
-                                        mockVotes[option] = (mockVotes[option] || 0) + amount;
-                                        userTokens -= amount;
-                                        return { transactionHash: '0x' + Math.random().toString(16).substr(2, 64) };
-                                    }
-                                }),
-                                getVotingOptions: () => ({
-                                    call: async () => mockOptions
-                                }),
-                                optionVotes: (option) => ({
-                                    call: async () => mockVotes[option] || 0
-                                }),
-                                votersToTokenCount: (address) => ({
-                                    call: async () => address === userAccount ? '1000000000000000000000' : '0'
-                                }),
-                                owner: () => ({
-                                    call: async () => userAccount
-                                }),
-                                checkWinner: (options) => ({
-                                    call: async () => {
-                                        let winner = '';
-                                        let maxVotes = 0;
-                                        options.forEach(option => {
-                                            const votes = mockVotes[option] || 0;
-                                            if (votes > maxVotes) {
-                                                maxVotes = votes;
-                                                winner = option;
-                                            }
-                                        });
-                                        return { winner, winningVotes: maxVotes };
-                                    }
-                                }),
-                                balanceOf: (address) => ({
-                                    call: async () => userTokens * Math.pow(10, 18)
-                                })
-                            }
-                        };
-                    }
-                    
-                    // Auto-register in demo mode
-                    mockOptions = [];
-                    mockVotes = {};
-                    showNotification('Demo mode - Mock wallet connected and registered!', 'success');
-                    setButtonLoading('connect-btn-text', false);
-                }, 1500);
-            }
-        }
-
-        async function initWeb3() {
-            // Remove auto-connection - now manual via button
-            updateConnectionStatus();
-            
-            // Load initial voting options if contract is available
-            if (typeof window.ethereum !== 'undefined') {
-                try {
-                    web3 = new Web3(window.ethereum);
-                    contract = new web3.eth.Contract(contractABI, contractAddress);
-                    await loadVotingOptionsFromContract();
-                    updateVoteOptions();
-                    
-                    // Listen for account changes
-                    window.ethereum.on('accountsChanged', handleAccountsChanged);
-                    window.ethereum.on('chainChanged', handleChainChanged);
-                } catch (error) {
-                    console.error('Error initializing contract:', error);
-                }
-            }
-        }
-
-        function updateConnectionStatus() {
-            const statusDot = document.getElementById('status-dot');
-            const statusText = document.getElementById('connection-status');
-            
-            if (isConnected) {
-                statusDot.classList.add('connected');
-                if (!statusText.textContent.includes('Registered') && !statusText.textContent.includes('Not Registered')) {
-                    statusText.textContent = 'Connected';
-                }
-            } else {
-                statusDot.classList.remove('connected');
-                statusText.textContent = 'Not Connected';
-            }
-            
-            document.getElementById('user-account').textContent = userAccount ? 
-                userAccount.substring(0, 6) + '...' + userAccount.substring(38) : 'Not Connected';
-            document.getElementById('user-tokens').textContent = `${userTokens} VT`;
-        }
-
-        async function registerVoter() {
-            if (!isConnected) {
-                showNotification('Please connect your wallet first', 'error');
-                return;
-            }
-            
-            const voterAddress = document.getElementById('voter-address').value;
-            if (!voterAddress) {
-                showNotification('Please enter a voter address', 'error');
-                return;
-            }
-            
-            if (!voterAddress.startsWith('0x') || voterAddress.length !== 42) {
-                showNotification('Please enter a valid Ethereum address (0x followed by 40 characters)', 'error');
-                return;
-            }
-            
-            // Check if user is trying to register themselves
-            if (voterAddress.toLowerCase() === userAccount.toLowerCase()) {
-                showNotification('You are automatically registered when you connect your wallet', 'error');
-                return;
-            }
-
-            setButtonLoading('register-btn-text', true);
-            
             try {
-                // Check if voter is already registered
-                try {
-                    const existingTokens = await contract.methods.votersToTokenCount(voterAddress).call();
-                    if (parseInt(existingTokens) > 0) {
-                        showNotification('This address is already registered as a voter', 'error');
-                        return;
-                    }
-                } catch (error) {
-                    console.error('Error checking existing registration:', error);
-                    showNotification('Error checking existing registration', 'error');
-                    return;
+                if (typeof window.ethereum === 'undefined') {
+                    throw new Error('MetaMask is not installed');
                 }
+
+                showLoading(connectWalletBtn, 'Connecting...');
+
+                provider = new ethers.BrowserProvider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = await provider.getSigner();
+                currentAccount = await signer.getAddress();
                 
-                // Call the smart contract
-                const result = await contract.methods.registerVoter(voterAddress).send({
-                    from: userAccount,
-                    gas: 200000
-                });
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                updateUI();
+                hideLoading(connectWalletBtn, 'Connect Wallet');
                 
-                showNotification('Voter registered successfully!', 'success');
-                document.getElementById('voter-address').value = '';
-                updateConnectionStatus();
+                // Listen for account changes
+                window.ethereum.on('accountsChanged', handleAccountsChanged);
+                window.ethereum.on('chainChanged', handleChainChanged);
+
             } catch (error) {
-                console.error('Registration error:', error);
-                let errorMessage = 'Registration failed';
-                if (error.message.includes('Voter already registered')) {
-                    errorMessage = 'This address is already registered as a voter';
-                } else if (error.message.includes('Invalid address')) {
-                    errorMessage = 'Invalid voter address provided';
+                console.error('Connection failed:', error);
+                showStatus('walletInfo', `Connection failed: ${error.message}`, 'error');
+                hideLoading(connectWalletBtn, 'Connect Wallet');
+            }
+        }
+
+        async function disconnectWallet() {
+            provider = null;
+            signer = null;
+            contract = null;
+            currentAccount = null;
+
+            connectWalletBtn.classList.remove('hidden');
+            disconnectWalletBtn.classList.add('hidden');
+            tokenInfo.classList.add('hidden');
+            mainContent.classList.add('hidden');
+            walletInfo.innerHTML = '<p>Connect your wallet to start voting</p>';
+
+            // Remove event listeners
+            if (window.ethereum) {
+                window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+                window.ethereum.removeListener('chainChanged', handleChainChanged);
+            }
+        }
+
+        async function checkConnection() {
+            try {
+                if (window.ethereum) {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        provider = new ethers.BrowserProvider(window.ethereum);
+                        signer = await provider.getSigner();
+                        currentAccount = accounts[0];
+                        contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                        updateUI();
+                        
+                        window.ethereum.on('accountsChanged', handleAccountsChanged);
+                        window.ethereum.on('chainChanged', handleChainChanged);
+                    }
                 }
-                showNotification(errorMessage, 'error');
+            } catch (error) {
+                console.error('Error checking connection:', error);
+            }
+        }
+
+        function updateUI() {
+            if (currentAccount) {
+                walletInfo.innerHTML = `
+                    <p><strong>Connected Account:</strong></p>
+                    <div class="wallet-address">${currentAccount}</div>
+                    <p style="margin-top: 10px; color: rgba(255, 255, 255, 0.8);">✅ Wallet Connected</p>
+                `;
+                connectWalletBtn.classList.add('hidden');
+                disconnectWalletBtn.classList.remove('hidden');
+                tokenInfo.classList.remove('hidden');
+                mainContent.classList.remove('hidden');
+                
+                // Load token balance and voter status
+                updateTokenBalance();
+            }
+        }
+
+        async function updateTokenBalance() {
+    try {
+        if (!contract || !currentAccount) return;
+
+        console.log("Getting decimals and balance for:", currentAccount);
+
+        const decimals = await contract.decimals();
+        const balance = await contract.balanceOf(currentAccount);
+        const formattedBalance = (Number(balance) / Math.pow(10, decimals)).toFixed(2);
+        tokenBalance.textContent = `${formattedBalance} VT`;
+
+        const tokenCount = await contract.votersToTokenCount(currentAccount);
+        const isRegistered = tokenCount > 0;
+
+        let statusHtml = '';
+        if (isRegistered) {
+            const allocatedTokens = (Number(tokenCount) / Math.pow(10, decimals)).toFixed(2);
+            statusHtml = `
+                <div class="voter-status status-registered">
+                    ✅ Registered Voter | Allocated: ${allocatedTokens} VT
+                </div>
+            `;
+        } else {
+            statusHtml = `
+                <div class="voter-status status-not-registered">
+                    ⚠️ Not Registered - Register to participate in voting
+                </div>
+            `;
+        }
+
+        const tokenDisplay = document.querySelector('.token-display');
+        const existingStatus = tokenDisplay.querySelector('.voter-status');
+        if (existingStatus) {
+            existingStatus.remove();
+        }
+        tokenDisplay.insertAdjacentHTML('beforeend', statusHtml);
+
+    } catch (error) {
+        console.error('Error updating token balance:', error);
+        tokenBalance.textContent = '0 VT';
+    }
+}
+
+        async function handleAccountsChanged(accounts) {
+            if (accounts.length === 0) {
+                disconnectWallet();
+            } else {
+                currentAccount = accounts[0];
+                signer = await provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                updateUI();
+            }
+        }
+
+        function handleChainChanged() {
+            window.location.reload();
+        }
+
+        // Contract interaction functions
+        async function registerVoter() {
+            try {
+                const voterAddress = document.getElementById('voterAddress').value;
+                if (!voterAddress) {
+                    throw new Error('Please enter a voter address');
+                }
+
+                if (!ethers.isAddress(voterAddress)) {
+                    throw new Error('Invalid address format');
+                }
+
+                showLoading(document.getElementById('registerVoterBtn'), 'Registering...');
+                showStatus('registerStatus', 'Transaction submitted, waiting for confirmation...', 'info');
+
+                const tx = await contract.registerVoter(voterAddress);
+                await tx.wait();
+
+                showStatus('registerStatus', `Voter registered successfully! Transaction: ${tx.hash}`, 'success');
+                document.getElementById('voterAddress').value = '';
+                
+                // Refresh token balance if the registered voter is the current user
+                if (voterAddress.toLowerCase() === currentAccount.toLowerCase()) {
+                    setTimeout(() => updateTokenBalance(), 2000);
+                }
+
+            } catch (error) {
+                console.error('Registration failed:', error);
+                showStatus('registerStatus', `Registration failed: ${error.reason || error.message}`, 'error');
             } finally {
-                document.getElementById('register-btn-text').textContent = 'Register Voter';
-                setButtonLoading('register-btn-text', false);
+                hideLoading(document.getElementById('registerVoterBtn'), 'Register Voter');
             }
         }
 
         async function createVotingOption() {
-            if (!isConnected) {
-                showNotification('Please connect your wallet first', 'error');
-                return;
-            }
-            
-            const optionName = document.getElementById('option-name').value;
-            const duration = document.getElementById('voting-duration').value;
-            
-            if (!optionName || !duration || parseInt(duration) <= 0) {
-                showNotification('Please fill in all fields with valid values', 'error');
-                return;
-            }
-
-            setButtonLoading('create-btn-text', true);
-            
             try {
-                // Check if user is the contract owner
-                try {
-                    const owner = await contract.methods.owner().call();
-                    if (owner.toLowerCase() !== userAccount.toLowerCase()) {
-                        showNotification('Only the contract owner can create voting options', 'error');
-                        return;
-                    }
-                } catch (error) {
-                    console.error('Error checking contract ownership:', error);
-                    showNotification('Error checking contract ownership', 'error');
-                    return;
+                const optionName = document.getElementById('optionName').value;
+                const duration = document.getElementById('votingDuration').value;
+
+                if (!optionName || !duration) {
+                    throw new Error('Please fill in all fields');
                 }
-                
-                // Call the smart contract
-                const result = await contract.methods.hostVoting(optionName, parseInt(duration)).send({
-                    from: userAccount,
-                    gas: 200000
-                });
-                
-                // Refresh the options from the contract
-                await loadVotingOptionsFromContract();
-                updateVoteOptions();
-                showNotification('Voting option created!', 'success');
-                document.getElementById('option-name').value = '';
-                document.getElementById('voting-duration').value = '';
+
+                showLoading(document.getElementById('createOptionBtn'), 'Creating...');
+                showStatus('createStatus', 'Transaction submitted, waiting for confirmation...', 'info');
+
+                const tx = await contract.hostVoting(optionName, parseInt(duration));
+                await tx.wait();
+
+                showStatus('createStatus', `Voting option created successfully! Transaction: ${tx.hash}`, 'success');
+                document.getElementById('optionName').value = '';
+                document.getElementById('votingDuration').value = '';
+
             } catch (error) {
-                console.error('Create option error:', error);
-                let errorMessage = 'Failed to create option';
-                if (error.message.includes('Only owner can call this function')) {
-                    errorMessage = 'Only the contract owner can create voting options';
-                } else if (error.message.includes('Option already exists')) {
-                    errorMessage = 'This voting option already exists';
-                }
-                showNotification(errorMessage, 'error');
+                console.error('Creation failed:', error);
+                showStatus('createStatus', `Creation failed: ${error.reason || error.message}`, 'error');
             } finally {
-                document.getElementById('create-btn-text').textContent = 'Create Option';
-                setButtonLoading('create-btn-text', false);
+                hideLoading(document.getElementById('createOptionBtn'), 'Create Option');
             }
         }
 
         async function castVote() {
-            if (!isConnected) {
-                showNotification('Please connect your wallet first', 'error');
-                return;
-            }
-            
-            const selectedOption = document.getElementById('vote-option').value;
-            const voteAmount = parseInt(document.getElementById('vote-amount').value);
-            
-            if (!selectedOption || !voteAmount || voteAmount <= 0) {
-                showNotification('Please select an option and enter a valid amount', 'error');
-                return;
-            }
-
-            if (voteAmount > userTokens) {
-                showNotification('Insufficient tokens', 'error');
-                return;
-            }
-
-            setButtonLoading('vote-btn-text', true);
-            
             try {
-                // Check if user is registered as a voter
-                try {
-                    const voterTokens = await contract.methods.votersToTokenCount(userAccount).call();
-                    if (parseInt(voterTokens) === 0) {
-                        showNotification('You must register as a voter first', 'error');
-                        return;
-                    }
-                } catch (error) {
-                    console.error('Error checking voter registration:', error);
-                    showNotification('Error checking voter registration', 'error');
-                    return;
+                const voterAddress = document.getElementById('voteVoterAddress').value;
+                const amount = document.getElementById('voteAmount').value;
+                const option = document.getElementById('voteOption').value;
+
+                if (!voterAddress || !amount || !option) {
+                    throw new Error('Please fill in all fields');
                 }
+
+                if (!ethers.isAddress(voterAddress)) {
+                    throw new Error('Invalid voter address format');
+                }
+
+                showLoading(document.getElementById('castVoteBtn'), 'Voting...');
+                showStatus('voteStatus', 'Transaction submitted, waiting for confirmation...', 'info');
+
+                const tx = await contract.giveVotes(voterAddress, ethers.parseEther(amount.toString()), option);
+                await tx.wait();
+
+                showStatus('voteStatus', `Vote cast successfully! Transaction: ${tx.hash}`, 'success');
+                document.getElementById('voteVoterAddress').value = '';
+                document.getElementById('voteAmount').value = '';
+                document.getElementById('voteOption').value = '';
                 
-                // Call the smart contract
-                const result = await contract.methods.giveVotes(userAccount, voteAmount, selectedOption).send({
-                    from: userAccount,
-                    gas: 200000
-                });
-                
-                // Update user tokens from contract
-                await updateUserTokens();
-                await loadVotingOptionsFromContract();
-                showNotification(`Voted ${voteAmount} tokens for ${selectedOption}!`, 'success');
-                document.getElementById('vote-amount').value = '';
+                // Refresh token balance after voting
+                setTimeout(() => updateTokenBalance(), 2000);
+
             } catch (error) {
-                console.error('Voting error:', error);
-                let errorMessage = 'Voting failed';
-                if (error.message.includes('Insufficient tokens')) {
-                    errorMessage = 'Insufficient tokens for voting';
-                } else if (error.message.includes('Voter not registered')) {
-                    errorMessage = 'You must register as a voter first';
-                } else if (error.message.includes('Voting period has ended')) {
-                    errorMessage = 'Voting period has ended for this option';
-                } else if (error.message.includes('Amount must be greater than zero')) {
-                    errorMessage = 'Vote amount must be greater than zero';
-                }
-                showNotification(errorMessage, 'error');
+                console.error('Voting failed:', error);
+                showStatus('voteStatus', `Voting failed: ${error.reason || error.message}`, 'error');
             } finally {
-                document.getElementById('vote-btn-text').textContent = 'Cast Vote';
-                setButtonLoading('vote-btn-text', false);
+                hideLoading(document.getElementById('castVoteBtn'), 'Cast Vote');
             }
         }
 
-        async function loadVotingOptionsFromContract() {
+        async function refreshVotingOptions() {
             try {
-                if (contract) {
-                    const options = await contract.methods.getVotingOptions().call();
-                    mockOptions = options;
-                    
-                    // Load votes for each option
-                    mockVotes = {};
-                    for (let option of options) {
-                        try {
-                            const votes = await contract.methods.optionVotes(option).call();
-                            mockVotes[option] = parseInt(votes);
-                        } catch (error) {
-                            console.error('Error loading votes for option:', option, error);
-                            mockVotes[option] = 0;
-                        }
-                    }
+                showLoading(document.getElementById('refreshOptionsBtn'), 'Loading...');
+                
+                const options = await contract.getVotingOptions();
+                const optionsList = document.getElementById('optionsList');
+                
+                if (options.length === 0) {
+                    optionsList.innerHTML = '<p style="color: rgba(255, 255, 255, 0.7);">No voting options available</p>';
+                    return;
                 }
-            } catch (error) {
-                console.error('Error loading voting options from contract:', error);
-                // Keep existing options if there's an error
-            }
-        }
 
-        async function updateUserTokens() {
-            try {
-                if (contract && userAccount) {
-                    const balance = await contract.methods.balanceOf(userAccount).call();
-                    userTokens = parseInt(balance) / Math.pow(10, 18); // Convert from wei to tokens
-                    
-                    // Check if user is registered as a voter
+                let html = '';
+                for (let i = 0; i < options.length; i++) {
+                    const option = options[i];
                     try {
-                        const voterTokens = await contract.methods.votersToTokenCount(userAccount).call();
-                        const isRegistered = parseInt(voterTokens) > 0;
-                        
-                        // Update UI to show registration status
-                        const statusText = document.getElementById('connection-status');
-                        if (isRegistered) {
-                            statusText.textContent = 'Connected (Registered Voter)';
-                        } else {
-                            statusText.textContent = 'Connected (Not Registered)';
-                        }
+                        const votes = await contract.optionVotes(option);
+                        const formattedVotes = ethers.formatEther(votes);
+                        html += `
+                            <div class="option-item">
+                                <span>${option}</span>
+                                <span class="vote-count">${formattedVotes} votes</span>
+                            </div>
+                        `;
                     } catch (error) {
-                        console.error('Error checking voter registration:', error);
-                        const statusText = document.getElementById('connection-status');
-                        statusText.textContent = 'Connected';
+                        console.error(`Error getting votes for ${option}:`, error);
+                        html += `
+                            <div class="option-item">
+                                <span>${option}</span>
+                                <span class="vote-count">0 votes</span>
+                            </div>
+                        `;
                     }
-                    
-                    updateConnectionStatus();
-                }
-            } catch (error) {
-                console.error('Error updating user tokens:', error);
-                userTokens = 0;
-                updateConnectionStatus();
-            }
-        }
-
-        function updateVoteOptions() {
-            const select = document.getElementById('vote-option');
-            select.innerHTML = '<option value="">Select an option...</option>';
-            
-            mockOptions.forEach(option => {
-                const optionElement = document.createElement('option');
-                optionElement.value = option;
-                optionElement.textContent = option;
-                select.appendChild(optionElement);
-            });
-        }
-
-        async function loadVotingOptions() {
-            const container = document.getElementById('voting-options');
-            
-            try {
-                await loadVotingOptionsFromContract();
-                
-                if (mockOptions.length === 0) {
-                    container.innerHTML = '<p style="color: rgba(255, 255, 255, 0.7); text-align: center; margin-top: 1rem;">No voting options available. Create some options first!</p>';
-                    return;
                 }
                 
-                container.innerHTML = '';
-                mockOptions.forEach(option => {
-                    const optionDiv = document.createElement('div');
-                    optionDiv.className = 'option-item';
-                    optionDiv.innerHTML = `
-                        <span class="option-name">${option}</span>
-                        <span class="option-votes">${mockVotes[option] || 0} votes</span>
-                    `;
-                    container.appendChild(optionDiv);
-                });
+                optionsList.innerHTML = html;
+
             } catch (error) {
-                console.error('Error loading voting options:', error);
-                container.innerHTML = '<p style="color: rgba(255, 255, 255, 0.7); text-align: center; margin-top: 1rem;">Error loading voting options</p>';
+                console.error('Failed to load options:', error);
+                document.getElementById('optionsList').innerHTML = 
+                    '<p style="color: #ff6b6b;">Failed to load options. Please try again.</p>';
+            } finally {
+                hideLoading(document.getElementById('refreshOptionsBtn'), 'Refresh Options');
             }
         }
 
-        async function checkResults() {
-            if (!isConnected) {
-                showNotification('Please connect your wallet first', 'error');
-                return;
-            }
-            
+        async function checkWinner() {
             try {
-                // Load latest options from contract
-                await loadVotingOptionsFromContract();
+                showLoading(document.getElementById('checkWinnerBtn'), 'Checking...');
                 
-                if (mockOptions.length === 0) {
-                    showNotification('No voting options available', 'error');
+                const options = await contract.getVotingOptions();
+                
+                if (options.length === 0) {
+                    showStatus('winnerStatus', 'No voting options available', 'error');
                     return;
                 }
 
-                // Call the contract's checkWinner function
-                const result = await contract.methods.checkWinner(mockOptions).call();
-                const winner = result.winner;
-                const winningVotes = parseInt(result.winningVotes);
-
-                const resultsDiv = document.getElementById('results-display');
+                const [winner, winningVotes] = await contract.checkWinner(options);
+                
                 if (winner && winningVotes > 0) {
-                    resultsDiv.innerHTML = `
-                        <div class="winner-announcement">
-                            <h3>🎉 Winner: ${winner}</h3>
-                            <p>Total Votes: ${winningVotes} VT</p>
-                        </div>
-                    `;
+                    document.getElementById('winnerName').textContent = `🏆 ${winner}`;
+                    document.getElementById('winnerVotes').textContent = `${ethers.formatEther(winningVotes)} votes`;
+                    document.getElementById('winnerDisplay').classList.remove('hidden');
+                    document.getElementById('winnerStatus').classList.add('hidden');
                 } else {
-                    resultsDiv.innerHTML = `
-                        <div class="winner-announcement">
-                            <h3>📊 No votes cast yet</h3>
-                            <p>Start voting to see results!</p>
-                        </div>
-                    `;
+                    showStatus('winnerStatus', 'No votes cast yet', 'info');
+                    document.getElementById('winnerDisplay').classList.add('hidden');
                 }
+
             } catch (error) {
-                console.error('Error checking results:', error);
-                showNotification('Error checking results: ' + error.message, 'error');
+                console.error('Failed to check winner:', error);
+                showStatus('winnerStatus', `Failed to check winner: ${error.reason || error.message}`, 'error');
+                document.getElementById('winnerDisplay').classList.add('hidden');
+            } finally {
+                hideLoading(document.getElementById('checkWinnerBtn'), 'Check Winner');
             }
         }
 
-        // Handle account changes
-        async function handleAccountsChanged(accounts) {
-            if (accounts.length === 0) {
-                // MetaMask is locked or user has not connected any accounts
-                console.log('Please connect to MetaMask.');
-                if (isConnected) {
-                    // Disconnect if we were previously connected
-                    isConnected = false;
-                    userAccount = null;
-                    userTokens = 0;
-                    contract = null;
-                    document.getElementById('connect-btn-text').textContent = '🔗 Connect Wallet';
-                    updateConnectionStatus();
-                    showNotification('Wallet disconnected - please reconnect', 'error');
-                }
-            } else if (accounts[0] !== userAccount) {
-                // Account changed
-                userAccount = accounts[0];
-                if (isConnected) {
-                    showNotification('Account changed to: ' + accounts[0].substring(0, 6) + '...' + accounts[0].substring(38), 'success');
-                    await updateUserTokens();
-                    updateConnectionStatus();
-                }
-            }
-        }
-
-        // Handle chain changes
-        function handleChainChanged(_chainId) {
-            // We recommend reloading the page, unless you have good reason not to
-            window.location.reload();
-        }
-
-        // Initialize the app
-        window.addEventListener('load', async () => {
-            await initWeb3();
+        // Utility functions
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status-message status-${type}`;
+            element.classList.remove('hidden');
             
-            // Load voting options on page load
-            if (typeof window.ethereum !== 'undefined') {
-                try {
-                    await loadVotingOptionsFromContract();
-                    updateVoteOptions();
-                } catch (error) {
-                    console.error('Error loading initial voting options:', error);
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    element.classList.add('hidden');
+                }, 5000);
+            }
+        }
+
+        function showLoading(button, text) {
+            button.disabled = true;
+            button.innerHTML = `<span class="loading"></span>${text}`;
+        }
+
+        function hideLoading(button, originalText) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+
+        // Event listeners
+        connectWalletBtn.addEventListener('click', connectWallet);
+        disconnectWalletBtn.addEventListener('click', disconnectWallet);
+        refreshTokensBtn.addEventListener('click', () => {
+            showLoading(refreshTokensBtn, 'Refreshing...');
+            updateTokenBalance().finally(() => {
+                hideLoading(refreshTokensBtn, 'Refresh Balance');
+            });
+        });
+        document.getElementById('registerVoterBtn').addEventListener('click', registerVoter);
+        document.getElementById('createOptionBtn').addEventListener('click', createVotingOption);
+        document.getElementById('castVoteBtn').addEventListener('click', castVote);
+        document.getElementById('refreshOptionsBtn').addEventListener('click', refreshVotingOptions);
+        document.getElementById('checkWinnerBtn').addEventListener('click', checkWinner);
+
+        // Auto-fill current account for voter address fields
+        document.getElementById('voterAddress').addEventListener('focus', function() {
+            if (currentAccount && !this.value) {
+                this.value = currentAccount;
+            }
+        });
+
+        document.getElementById('voteVoterAddress').addEventListener('focus', function() {
+            if (currentAccount && !this.value) {
+                this.value = currentAccount;
+            }
+        });
+
+        // Form validation
+        document.getElementById('voterAddress').addEventListener('input', function() {
+            const isValid = ethers.isAddress(this.value) || this.value === '';
+            this.style.borderColor = isValid ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 107, 107, 0.5)';
+        });
+
+        document.getElementById('voteVoterAddress').addEventListener('input', function() {
+            const isValid = ethers.isAddress(this.value) || this.value === '';
+            this.style.borderColor = isValid ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 107, 107, 0.5)';
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        if (!mainContent.classList.contains('hidden')) {
+                            refreshVotingOptions();
+                        }
+                        break;
+                    case 'w':
+                        e.preventDefault();
+                        if (!mainContent.classList.contains('hidden')) {
+                            checkWinner();
+                        }
+                        break;
                 }
             }
         });
+
+        // Warning about contract address - removed since address is now set
     </script>
 </body>
 </html>

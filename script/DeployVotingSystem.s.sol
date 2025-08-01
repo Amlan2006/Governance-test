@@ -9,7 +9,7 @@ contract DeployVotingSystem is Script {
 
     function run() public {
         vm.startBroadcast();
-        VotingSystem votingSystem = new VotingSystem();
+        VotingSystem votingSystem = new VotingSystem(1000e18);
         vm.stopBroadcast();
     }
 }
